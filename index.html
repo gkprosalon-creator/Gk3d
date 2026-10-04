@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GK 3D - Учет пластика</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Кастомный цвет выделения, чтобы подходил под оранжевый стиль */
+        ::selection { background: #f97316; color: white; }
+    </style>
+</head>
+<body class="bg-slate-900 text-gray-200 p-4 md:p-8 font-sans">
+    <div class="max-w-3xl mx-auto">
+        
+        <!-- Заголовок / Логотип -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-black text-orange-500 tracking-widest uppercase" style="font-family: Impact, sans-serif;">GK 3D</h1>
+            <p class="text-slate-400 mt-2 tracking-widest text-sm uppercase">Склад 3D пластика</p>
+        </div>
+
+        <!-- Статистика -->
+        <div class="bg-slate-800 rounded-xl shadow-lg p-6 mb-6 border-l-4 border-orange-500">
+            <div class="flex flex-col md:flex-row justify-between text-lg font-semibold gap-4">
+                <div class="bg-slate-900 p-4 rounded-lg w-full text-center shadow-inner">
+                    <span class="block text-sm text-slate-400 font-normal">Всего пластика</span>
+                    <span id="total-weight" class="text-2xl text-orange-500">0</span> кг
+                </div>
+                <div class="bg-slate-900 p-4 rounded-lg w-full text-center shadow-inner">
+                    <span class="block text-sm text-slate-400 font-normal">Общая стоимость</span>
+                    <span id="total-cost" class="text-2xl text-orange-500">0</span> BYN
+                </div>
+            </div>
+        </div>
+
+        <!-- Форма добавления -->
+        <div class="bg-slate-800 rounded-xl shadow-lg p-6 mb-8 border border-slate-700">
+            <h2 class="text-xl font-bold mb-4 text-white">Добавить катушку</h2>
+            <form id="add-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <select id="brand" class="bg-slate-700 text-white border border-slate-600 p-3 rounded focus:outline-none focus:border-orange-500 w-full" required>
+                    <option value="" disabled selected>Производитель</option>
+                    <option value="U3PRINT">U3PRINT</option>
+                    <option value="Exoflex">Exoflex</option>
+                    <option value="Star Plast">Star Plast</option>
+                    <option value="Mako">Mako</option>
+                    <option value="Plastiq">Plastiq</option>
+                    <option value="Другой">Другой</option>
+                </select>
+
+                <select id="type" class="bg-slate-700 text-white border border-slate-600 p-3 rounded focus:outline-none focus:border-orange-500 w-full" required>
+                    <option value="" disabled selected>Тип пластика</option>
+                    <option value="PET GF">PET GF</option>
+                    <option value="PETG CF">PETG CF</option>
+                    <option value="PETG GF">PETG GF</option>
+                    <option value="PETG">PETG</option>
+                    <option value="PLA">PLA</option>
+                    <option value="TPU">TPU</option>
+                </select>
+
+                <select id="color" class="bg-slate-700 text-white border border-slate-600 p-3 rounded focus:outline-none focus:border-orange-500 w-full" required>
+                    <option value="" disabled selected>Цвет</option>
+                    <option value="Красный">🔴 Красный</option>
+                    <option value="Оранжевый">🟠 Оранжевый</option>
+                    <option value="Желтый">🟡 Желтый</option>
+                    <option value="Зеленый">🟢 Зеленый</option>
+                    <option value="Голубой">💧 Голубой</option>
+                    <option value="Синий">🔵 Синий</option>
+                    <option value="Фиолетовый">🟣 Фиолетовый</option>
+                    <option value="Белый">⚪ Белый</option>
+                    <option value="Серый">🔘 Серый</option>
+                    <option value="Черный">⚫ Черный</option>
+                </select>
+                
+                <input type="number" id="weight" placeholder="Вес (кг)" step="0.1" class="bg-slate-700 text-white border border-slate-600 p-3 rounded focus:outline-none focus:border-orange-500 w-full" required>
+                
+                <input type="number" id="price" placeholder="Стоимость (за шт)" step="0.1" class="bg-slate-700 text-white border border-slate-600 p-3 rounded focus:outline-none focus:border-orange-500 w-full" required>
+
+                <button type="submit" class="md:col-span-2 bg-orange-600 text-white font-bold py-3 rounded hover:bg-orange-500 transition shadow-lg mt-2">
+                    Добавить на склад
+                </button>
+            </form>
+        </div>
+
+        <!-- Список катушек -->
+        <div>
+            <h2 class="text-2xl font-bold mb-4 text-white">Наличие на складе</h2>
+            <div id="inventory-list" class="space-y-6">
+                <!-- Сюда будут добавляться сгруппированные списки -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Загрузка данных или пустой массив
+        let inventory = JSON.parse(localStorage.getItem('gk3d_inventory')) || [];
+
+        const form = document.getElementById('add-form');
+        const inventoryList = document.getElementById('inventory-list');
+        const totalWeightEl = document.getElementById('total-weight');
+        const totalCostEl = document.getElementById('total-cost');
+
+        function updateUI() {
+            inventoryList.innerHTML = '';
+            let totalWeight = 0;
+            let totalCost = 0;
+
+            // Считаем общие суммы
+            inventory.forEach(item => {
+                totalWeight += parseFloat(item.weight);
+                totalCost += parseFloat(item.price);
+            });
+
+            totalWeightEl.textContent = totalWeight.toFixed(2);
+            totalCostEl.textContent = totalCost.toFixed(2);
+            
+            // Группировка по типу пластика
+            const grouped = inventory.reduce((acc, item) => {
+                if (!acc[item.type]) acc[item.type] = [];
+                acc[item.type].push(item);
+                return acc;
+            }, {});
+
+            // Сортировка типов пластика по алфавиту
+            const sortedTypes = Object.keys(grouped).sort();
+
+            if (sortedTypes.length === 0) {
+                inventoryList.innerHTML = '<div class="text-slate-500 text-center py-8">Склад пуст. Добавьте первую катушку.</div>';
+            }
+
+            // Отрисовка групп
+            sortedTypes.forEach(type => {
+                // Создаем контейнер для группы
+                const groupContainer = document.createElement('div');
+                groupContainer.className = 'bg-slate-800 rounded-xl p-5 border border-slate-700 shadow-md';
+                
+                // Заголовок группы (Тип пластика)
+                const groupHeader = document.createElement('h3');
+                groupHeader.className = 'text-xl font-bold text-orange-500 mb-3 border-b border-slate-700 pb-2';
+                groupHeader.textContent = type;
+                groupContainer.appendChild(groupHeader);
+
+                // Контейнер для катушек внутри группы
+                const itemsContainer = document.createElement('div');
+                itemsContainer.className = 'space-y-3';
+
+                grouped[type].forEach(item => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'flex justify-between items-center bg-slate-900 p-3 rounded border border-slate-700';
+                    itemEl.innerHTML = `
+                        <div class="flex-1">
+                            <div class="font-bold text-white text-lg">${item.brand} <span class="font-normal text-slate-400 mx-2">|</span> ${item.color}</div>
+                            <div class="text-sm text-slate-400 mt-1">
+                                Опт: <span class="text-white">${item.weight} кг</span> &nbsp;&bull;&nbsp; 
+                                Цена: <span class="text-white">${item.price} BYN</span>
+                            </div>
+                        </div>
+                        <button onclick="deleteItem(${item.id})" class="ml-4 bg-red-500/10 text-red-500 hover:text-white hover:bg-red-600 px-4 py-2 rounded transition border border-red-500/30 hover:border-red-600">
+                            Удалить
+                        </button>
+                    `;
+                    itemsContainer.appendChild(itemEl);
+                });
+
+                groupContainer.appendChild(itemsContainer);
+                inventoryList.appendChild(groupContainer);
+            });
+
+            // Сохраняем данные
+            localStorage.setItem('gk3d_inventory', JSON.stringify(inventory));
+        }
+
+        // Добавление новой катушки
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newItem = {
+                id: Date.now(), // Уникальный ID для точного удаления
+                brand: document.getElementById('brand').value,
+                type: document.getElementById('type').value,
+                color: document.getElementById('color').value,
+                weight: document.getElementById('weight').value,
+                price: document.getElementById('price').value
+            };
+
+            inventory.push(newItem);
+            updateUI();
+            form.reset();
+        });
+
+        // Удаление катушки
+        window.deleteItem = function(id) {
+            if(confirm('Удалить эту катушку со склада?')) {
+                // Оставляем все элементы, кроме того, чей id совпадает
+                inventory = inventory.filter(item => item.id !== id);
+                updateUI();
+            }
+        }
+
+        // Первичная отрисовка при загрузке
+        updateUI();
+    </script>
+</body>
+</html>
