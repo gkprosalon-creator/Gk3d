@@ -222,4 +222,88 @@
                     
                     const itemEl = document.createElement('div');
                     // Усиленный контраст для самой катушки
-                    itemEl
+                    itemEl.className = 'flex justify-between items-center bg-slate-900 p-4 rounded-lg hover:bg-slate-800 transition group';
+                    itemEl.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="w-5 h-5 rounded-full shadow-inner ring-2 ring-slate-700 ${bgDotColor}"></div>
+                            <div class="flex flex-col">
+                                <span class="text-white font-bold text-lg leading-none">${item.brand}</span>
+                                <span class="text-xs text-slate-500 mt-1.5 opacity-0 group-hover:opacity-100 transition cursor-pointer hover:text-red-500 uppercase tracking-wider" onclick="deleteInventoryItem(${item.id})">Списать катушку</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right">
+                                <div class="text-slate-400 text-xs uppercase tracking-widest mb-1">Остаток</div>
+                                <div class="bg-[#0b0f19] px-3 py-1 rounded text-orange-500 font-black text-lg border border-slate-700 shadow-inner">
+                                    ${item.weight} <span class="text-sm font-normal text-slate-500">кг</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    itemsContainer.appendChild(itemEl);
+                });
+
+                groupContainer.appendChild(itemsContainer);
+                inventoryList.appendChild(groupContainer);
+            });
+
+            localStorage.setItem('gk3d_inventory', JSON.stringify(inventory));
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            inventory.push({
+                id: Date.now(),
+                brand: document.getElementById('brand').value,
+                type: document.getElementById('type').value,
+                color: document.getElementById('color').value,
+                weight: document.getElementById('weight').value,
+                price: document.getElementById('price').value
+            });
+            updateInventoryUI();
+            form.reset();
+            document.getElementById('brand').value = "";
+            document.getElementById('type').value = "";
+            document.getElementById('color').value = "";
+        });
+
+        window.deleteInventoryItem = function(id) {
+            if(confirm('Удалить эту катушку со склада?')) {
+                inventory = inventory.filter(item => item.id !== id);
+                updateInventoryUI();
+            }
+        }
+
+        window.exportData = function() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ inventory, brands }));
+            const a = document.createElement('a');
+            a.setAttribute("href", dataStr);
+            a.setAttribute("download", "gk3d_backup.json");
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        window.importData = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.inventory && data.brands) {
+                        inventory = data.inventory; brands = data.brands;
+                        updateBrandsUI(); updateInventoryUI();
+                        alert('Данные успешно загружены!');
+                    }
+                } catch(err) { alert('Ошибка при чтении файла.'); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        updateBrandsUI();
+        updateInventoryUI();
+    </script>
+</body>
+</html>
