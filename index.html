@@ -52,7 +52,7 @@
             <form id="add-form" class="space-y-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <select id="brand" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
-                        <!-- Генерируется через JS -->
+                        <option value="" disabled selected>Производитель</option>
                     </select>
                     <select id="type" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
                         <option value="" disabled selected>Тип пластика</option>
@@ -78,8 +78,8 @@
                     <option value="Черный">⚫ Черный</option>
                 </select>
                 <div class="flex gap-3">
-                    <input type="number" id="weight" placeholder="Вес (кг)" step="0.1" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
-                    <input type="number" id="price" placeholder="Цена (BYN)" step="0.1" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
+                    <input type="number" id="weight" placeholder="Вес (кг)" step="0.1" min="0" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
+                    <input type="number" id="price" placeholder="Цена (BYN)" step="0.1" min="0" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
                     <button type="submit" class="bg-slate-700 text-white font-bold px-6 rounded hover:bg-orange-600 transition">
                         ВНЕСТИ
                     </button>
@@ -87,7 +87,7 @@
             </form>
         </div>
 
-        <!-- ЯРКО ВЫДЕЛЕННЫЙ СКЛАД -->
+        <!-- СКЛАД -->
         <div class="mb-10">
             <div class="flex items-center gap-3 mb-6">
                 <div class="h-px bg-slate-700 flex-1"></div>
@@ -112,35 +112,52 @@
 
             <hr class="border-slate-700 mb-4">
 
-            <div class="flex gap-3">
-                <button onclick="exportData()" class="flex-1 bg-slate-900 text-slate-400 border border-slate-700 p-2 rounded hover:text-white transition text-sm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button onclick="exportData()" class="bg-slate-900 text-slate-400 border border-slate-700 p-2 rounded hover:text-white hover:bg-slate-700 transition text-sm">
                     Экспорт (Бекап)
                 </button>
-                <label class="flex-1 bg-slate-900 text-slate-400 border border-slate-700 p-2 rounded hover:text-white transition text-sm text-center cursor-pointer">
+                <label class="bg-slate-900 text-slate-400 border border-slate-700 p-2 rounded hover:text-white hover:bg-slate-700 transition text-sm text-center cursor-pointer">
                     Импорт данных
                     <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
                 </label>
+                <!-- Добавлена кнопка жесткого сброса для отладки -->
+                <button onclick="resetData()" class="bg-red-900/30 text-red-500 border border-red-900/50 p-2 rounded hover:text-white hover:bg-red-800 transition text-sm">
+                    Сброс данных
+                </button>
             </div>
         </div>
 
     </div>
 
     <script>
-        let inventory = JSON.parse(localStorage.getItem('gk3d_inventory')) || [];
-        let brands = JSON.parse(localStorage.getItem('gk3d_brands')) || ["U3PRINT", "Exoflex", "Star Plast", "Mako", "Plastiq"];
+        // Безопасная загрузка данных (защита от краша при битом localStorage)
+        let inventory = [];
+        try {
+            const savedInventory = localStorage.getItem('gk3d_inventory');
+            if (savedInventory) {
+                const parsed = JSON.parse(savedInventory);
+                if (Array.isArray(parsed)) inventory = parsed;
+            }
+        } catch (e) {
+            console.error("Ошибка чтения склада:", e);
+        }
 
-        // Соответствие цветов для визуальных кружков
+        let brands = ["U3PRINT", "Exoflex", "Star Plast", "Mako", "Plastiq"];
+        try {
+            const savedBrands = localStorage.getItem('gk3d_brands');
+            if (savedBrands) {
+                const parsed = JSON.parse(savedBrands);
+                if (Array.isArray(parsed) && parsed.length > 0) brands = parsed;
+            }
+        } catch (e) {
+            console.error("Ошибка чтения брендов:", e);
+        }
+
+        // Соответствие цветов
         const colorStyles = {
-            'Красный': 'bg-red-500',
-            'Оранжевый': 'bg-orange-500',
-            'Желтый': 'bg-yellow-400',
-            'Зеленый': 'bg-green-500',
-            'Голубой': 'bg-cyan-400',
-            'Синий': 'bg-blue-600',
-            'Фиолетовый': 'bg-purple-500',
-            'Белый': 'bg-white',
-            'Серый': 'bg-gray-400',
-            'Черный': 'bg-black'
+            'Красный': 'bg-red-500', 'Оранжевый': 'bg-orange-500', 'Желтый': 'bg-yellow-400',
+            'Зеленый': 'bg-green-500', 'Голубой': 'bg-cyan-400', 'Синий': 'bg-blue-600',
+            'Фиолетовый': 'bg-purple-500', 'Белый': 'bg-white', 'Серый': 'bg-gray-400', 'Черный': 'bg-black'
         };
 
         const form = document.getElementById('add-form');
@@ -159,7 +176,7 @@
                 chip.className = 'flex items-center bg-slate-900 rounded px-3 py-1 text-xs text-slate-400';
                 chip.innerHTML = `
                     <span>${b}</span>
-                    <button type="button" onclick="deleteBrand(${index})" class="ml-2 text-slate-500 hover:text-red-500">&times;</button>
+                    <button type="button" onclick="deleteBrand(${index})" class="ml-2 text-slate-500 hover:text-red-500 focus:outline-none">&times;</button>
                 `;
                 brandsListContainer.appendChild(chip);
             });
@@ -169,8 +186,9 @@
         document.getElementById('add-brand-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const input = document.getElementById('new-brand-name');
-            if (input.value.trim() && !brands.includes(input.value.trim())) {
-                brands.push(input.value.trim());
+            const val = input.value.trim();
+            if (val && !brands.includes(val)) {
+                brands.push(val);
                 updateBrandsUI();
             }
             input.value = '';
@@ -185,8 +203,8 @@
             let totalWeight = 0; let totalCost = 0;
 
             inventory.forEach(item => {
-                totalWeight += parseFloat(item.weight);
-                totalCost += parseFloat(item.price);
+                totalWeight += parseFloat(item.weight) || 0;
+                totalCost += parseFloat(item.price) || 0;
             });
 
             document.getElementById('total-weight').textContent = totalWeight.toFixed(2);
@@ -206,7 +224,6 @@
 
             sortedTypes.forEach(type => {
                 const groupContainer = document.createElement('div');
-                // Визуальное выделение группы пластика
                 groupContainer.className = 'bg-slate-800/80 rounded-xl p-1 border border-slate-700 shadow-xl';
                 
                 const groupHeader = document.createElement('div');
@@ -219,9 +236,7 @@
 
                 grouped[type].forEach(item => {
                     const bgDotColor = colorStyles[item.color] || 'bg-slate-500';
-                    
                     const itemEl = document.createElement('div');
-                    // Усиленный контраст для самой катушки
                     itemEl.className = 'flex justify-between items-center bg-slate-900 p-4 rounded-lg hover:bg-slate-800 transition group';
                     itemEl.innerHTML = `
                         <div class="flex items-center gap-4">
@@ -295,6 +310,8 @@
                         inventory = data.inventory; brands = data.brands;
                         updateBrandsUI(); updateInventoryUI();
                         alert('Данные успешно загружены!');
+                    } else {
+                        alert('Неверный формат файла резервной копии.');
                     }
                 } catch(err) { alert('Ошибка при чтении файла.'); }
             };
@@ -302,6 +319,16 @@
             event.target.value = '';
         }
 
+        // Жесткий сброс для исправления ошибок LocalStorage
+        window.resetData = function() {
+            if(confirm('ВНИМАНИЕ! Это действие удалит все данные со склада и сбросит список производителей. Продолжить?')) {
+                localStorage.removeItem('gk3d_inventory');
+                localStorage.removeItem('gk3d_brands');
+                location.reload();
+            }
+        }
+
+        // Первичный запуск
         updateBrandsUI();
         updateInventoryUI();
     </script>
