@@ -12,7 +12,6 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #f97316; }
         
-        /* Скрытие стрелок у числовых инпутов для эстетики */
         input[type="number"]::-webkit-inner-spin-button, 
         input[type="number"]::-webkit-outer-spin-button { 
             -webkit-appearance: none; margin: 0; 
@@ -36,11 +35,11 @@
                 <span class="text-lg text-white font-medium">Общая статистика</span>
             </div>
             <div class="space-y-3">
-                <div class="bg-slate-900 rounded p-3 flex justify-between items-center">
+                <div class="bg-slate-900 rounded p-3 flex justify-between items-center border border-slate-700/50">
                     <span class="text-slate-300 font-medium">Всего пластика</span>
                     <span class="text-orange-500 font-bold text-xl"><span id="total-weight">0</span> кг</span>
                 </div>
-                <div class="bg-slate-900 rounded p-3 flex justify-between items-center">
+                <div class="bg-slate-900 rounded p-3 flex justify-between items-center border border-slate-700/50">
                     <span class="text-slate-300 font-medium">Общая стоимость</span>
                     <span class="text-orange-500 font-bold text-xl"><span id="total-cost">0</span> BYN</span>
                 </div>
@@ -48,15 +47,13 @@
         </div>
 
         <!-- Форма добавления -->
-        <div class="bg-slate-800 rounded-r-xl rounded-l-sm p-5 mb-6 border-l-4 border-orange-500 shadow-lg">
-            <h2 class="text-lg text-white font-medium mb-4">Добавить катушку</h2>
+        <div class="bg-slate-800 rounded-r-xl rounded-l-sm p-5 mb-8 border-l-4 border-slate-600 shadow-lg opacity-90 hover:opacity-100 transition-opacity">
+            <h2 class="text-sm text-slate-400 font-medium mb-4 uppercase tracking-wider">Пополнение склада</h2>
             <form id="add-form" class="space-y-3">
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <select id="brand" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
                         <!-- Генерируется через JS -->
                     </select>
-
                     <select id="type" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
                         <option value="" disabled selected>Тип пластика</option>
                         <option value="PET GF">PET GF</option>
@@ -67,7 +64,6 @@
                         <option value="TPU">TPU</option>
                     </select>
                 </div>
-
                 <select id="color" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
                     <option value="" disabled selected>Цвет</option>
                     <option value="Красный">🔴 Красный</option>
@@ -81,48 +77,46 @@
                     <option value="Серый">🔘 Серый</option>
                     <option value="Черный">⚫ Черный</option>
                 </select>
-                
                 <div class="flex gap-3">
                     <input type="number" id="weight" placeholder="Вес (кг)" step="0.1" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
-                    
                     <input type="number" id="price" placeholder="Цена (BYN)" step="0.1" class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-orange-500 w-full outline-none" required>
-                    
-                    <button type="submit" class="bg-orange-500 text-white font-bold px-6 rounded hover:bg-orange-600 transition">
+                    <button type="submit" class="bg-slate-700 text-white font-bold px-6 rounded hover:bg-orange-600 transition">
                         ВНЕСТИ
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Список катушек -->
-        <div class="mb-6">
+        <!-- ЯРКО ВЫДЕЛЕННЫЙ СКЛАД -->
+        <div class="mb-10">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-px bg-slate-700 flex-1"></div>
+                <h2 class="text-2xl text-white font-bold tracking-wide uppercase">В наличии</h2>
+                <div class="h-px bg-slate-700 flex-1"></div>
+            </div>
+            
             <div id="inventory-list" class="space-y-6">
                 <!-- Сюда добавляются сгруппированные списки -->
             </div>
         </div>
 
         <!-- Настройки (Бренды + Бэкап) -->
-        <div class="bg-slate-800 rounded-r-xl rounded-l-sm p-5 border-l-4 border-slate-500 shadow-lg mb-8">
-            <h2 class="text-lg text-white font-medium mb-4">Настройки и данные</h2>
+        <div class="bg-slate-800 rounded-r-xl rounded-l-sm p-5 border-l-4 border-slate-600 shadow-lg mb-8 opacity-80">
+            <h2 class="text-sm text-slate-400 font-medium mb-4 uppercase tracking-wider">Настройки</h2>
             
-            <!-- Добавление бренда -->
             <form id="add-brand-form" class="flex gap-3 mb-4">
                 <input type="text" id="new-brand-name" placeholder="Новый производитель..." class="bg-slate-900 text-slate-300 border-none p-3 rounded focus:ring-1 focus:ring-slate-500 w-full outline-none" required>
-                <button type="submit" class="bg-slate-700 text-white font-bold px-4 rounded hover:bg-slate-600 transition">
-                    +
-                </button>
+                <button type="submit" class="bg-slate-700 text-white font-bold px-4 rounded hover:bg-slate-600 transition">+</button>
             </form>
             <div id="brands-list" class="flex flex-wrap gap-2 mb-6"></div>
 
             <hr class="border-slate-700 mb-4">
 
-            <!-- Импорт / Экспорт -->
             <div class="flex gap-3">
-                <button onclick="exportData()" class="flex-1 bg-slate-900 text-slate-300 border border-slate-700 p-2 rounded hover:bg-slate-700 transition text-sm">
-                    Экспорт (Резервная копия)
+                <button onclick="exportData()" class="flex-1 bg-slate-900 text-slate-400 border border-slate-700 p-2 rounded hover:text-white transition text-sm">
+                    Экспорт (Бекап)
                 </button>
-                
-                <label class="flex-1 bg-slate-900 text-slate-300 border border-slate-700 p-2 rounded hover:bg-slate-700 transition text-sm text-center cursor-pointer">
+                <label class="flex-1 bg-slate-900 text-slate-400 border border-slate-700 p-2 rounded hover:text-white transition text-sm text-center cursor-pointer">
                     Импорт данных
                     <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
                 </label>
@@ -135,11 +129,24 @@
         let inventory = JSON.parse(localStorage.getItem('gk3d_inventory')) || [];
         let brands = JSON.parse(localStorage.getItem('gk3d_brands')) || ["U3PRINT", "Exoflex", "Star Plast", "Mako", "Plastiq"];
 
+        // Соответствие цветов для визуальных кружков
+        const colorStyles = {
+            'Красный': 'bg-red-500',
+            'Оранжевый': 'bg-orange-500',
+            'Желтый': 'bg-yellow-400',
+            'Зеленый': 'bg-green-500',
+            'Голубой': 'bg-cyan-400',
+            'Синий': 'bg-blue-600',
+            'Фиолетовый': 'bg-purple-500',
+            'Белый': 'bg-white',
+            'Серый': 'bg-gray-400',
+            'Черный': 'bg-black'
+        };
+
         const form = document.getElementById('add-form');
         const inventoryList = document.getElementById('inventory-list');
         const brandSelect = document.getElementById('brand');
         
-        // --- Управление производителями ---
         function updateBrandsUI() {
             brandSelect.innerHTML = '<option value="" disabled selected>Производитель</option>';
             brands.forEach(b => brandSelect.innerHTML += `<option value="${b}">${b}</option>`);
@@ -162,22 +169,17 @@
         document.getElementById('add-brand-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const input = document.getElementById('new-brand-name');
-            const newBrand = input.value.trim();
-            if (newBrand && !brands.includes(newBrand)) {
-                brands.push(newBrand);
+            if (input.value.trim() && !brands.includes(input.value.trim())) {
+                brands.push(input.value.trim());
                 updateBrandsUI();
             }
             input.value = '';
         });
 
         window.deleteBrand = function(index) {
-            if(confirm('Удалить производителя?')) {
-                brands.splice(index, 1);
-                updateBrandsUI();
-            }
+            if(confirm('Удалить производителя?')) { brands.splice(index, 1); updateBrandsUI(); }
         }
 
-        // --- Управление складом ---
         function updateInventoryUI() {
             inventoryList.innerHTML = '';
             let totalWeight = 0; let totalCost = 0;
@@ -199,110 +201,25 @@
             const sortedTypes = Object.keys(grouped).sort();
 
             if (sortedTypes.length === 0) {
-                inventoryList.innerHTML = '<div class="text-slate-500 text-center py-4">Склад пуст</div>';
+                inventoryList.innerHTML = '<div class="text-slate-600 text-center py-8 border-2 border-dashed border-slate-800 rounded-xl">На складе пока нет катушек</div>';
             }
 
             sortedTypes.forEach(type => {
                 const groupContainer = document.createElement('div');
-                groupContainer.className = 'bg-slate-800 rounded-r-xl rounded-l-sm p-5 border-l-4 border-orange-500 shadow-lg';
+                // Визуальное выделение группы пластика
+                groupContainer.className = 'bg-slate-800/80 rounded-xl p-1 border border-slate-700 shadow-xl';
                 
-                const groupHeader = document.createElement('h3');
-                groupHeader.className = 'text-lg text-white font-medium mb-3';
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'bg-slate-800 text-orange-500 font-black text-xl px-5 py-3 rounded-t-lg tracking-widest';
                 groupHeader.textContent = type;
                 groupContainer.appendChild(groupHeader);
 
                 const itemsContainer = document.createElement('div');
-                itemsContainer.className = 'space-y-2';
+                itemsContainer.className = 'flex flex-col gap-1 px-1 pb-1';
 
                 grouped[type].forEach(item => {
+                    const bgDotColor = colorStyles[item.color] || 'bg-slate-500';
+                    
                     const itemEl = document.createElement('div');
-                    itemEl.className = 'flex justify-between items-center bg-slate-900 p-3 rounded';
-                    itemEl.innerHTML = `
-                        <div class="flex flex-col">
-                            <span class="text-slate-200 font-medium">${item.brand} <span class="text-slate-500 text-sm font-normal ml-1">${item.color}</span></span>
-                            <span class="text-xs text-slate-500 mt-1 cursor-pointer hover:text-red-500 transition" onclick="deleteInventoryItem(${item.id})">Удалить катушку</span>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-orange-500 font-bold">${item.weight} кг</div>
-                            <div class="text-slate-400 text-xs">${item.price} BYN</div>
-                        </div>
-                    `;
-                    itemsContainer.appendChild(itemEl);
-                });
-
-                groupContainer.appendChild(itemsContainer);
-                inventoryList.appendChild(groupContainer);
-            });
-
-            localStorage.setItem('gk3d_inventory', JSON.stringify(inventory));
-        }
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newItem = {
-                id: Date.now(),
-                brand: document.getElementById('brand').value,
-                type: document.getElementById('type').value,
-                color: document.getElementById('color').value,
-                weight: document.getElementById('weight').value,
-                price: document.getElementById('price').value
-            };
-            inventory.push(newItem);
-            updateInventoryUI();
-            
-            form.reset();
-            document.getElementById('brand').value = "";
-            document.getElementById('type').value = "";
-            document.getElementById('color').value = "";
-        });
-
-        window.deleteInventoryItem = function(id) {
-            if(confirm('Удалить эту катушку со склада?')) {
-                inventory = inventory.filter(item => item.id !== id);
-                updateInventoryUI();
-            }
-        }
-
-        // --- Импорт / Экспорт ---
-        window.exportData = function() {
-            const data = { inventory, brands };
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "gk3d_backup.json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
-        }
-
-        window.importData = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.inventory && data.brands) {
-                        inventory = data.inventory;
-                        brands = data.brands;
-                        updateBrandsUI();
-                        updateInventoryUI();
-                        alert('Данные успешно загружены!');
-                    } else {
-                        alert('Неверный формат файла резервной копии.');
-                    }
-                } catch(err) {
-                    alert('Ошибка при чтении файла.');
-                }
-            };
-            reader.readAsText(file);
-            // Сбрасываем инпут, чтобы можно было загрузить тот же файл повторно при необходимости
-            event.target.value = '';
-        }
-
-        updateBrandsUI();
-        updateInventoryUI();
-    </script>
-</body>
-</html>
+                    // Усиленный контраст для самой катушки
+                    itemEl
